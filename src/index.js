@@ -1303,8 +1303,6 @@ function setLoading(v){
   }
 }
 
-// ... lanjutan dari skeleton loader
-
 function showSkeletonLoader(){
   const container = document.getElementById("container");
   const skeletons = Array(8).fill(0).map(() => 
