@@ -1,0 +1,193 @@
+# ============================================================
+# LOGS
+# ============================================================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ============================================================
+# DIAGNOSTIC & REPORTS
+# ============================================================
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# ============================================================
+# RUNTIME DATA
+# ============================================================
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================================
+# COVERAGE & TEST
+# ============================================================
+lib-cov
+coverage
+*.lcov
+.nyc_output
+
+# Vitest (karena project kamu pakai vitest)
+.vitest/
+
+# ============================================================
+# BUILD TOOLS
+# ============================================================
+.grunt
+bower_components
+.lock-wscript
+build/Release
+
+# ============================================================
+# DEPENDENCIES
+# ============================================================
+node_modules/
+jspm_packages/
+web_modules/
+
+# ============================================================
+# CACHE
+# ============================================================
+*.tsbuildinfo
+.npm
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.cache
+.parcel-cache
+
+# ============================================================
+# OPTIONAL FILES
+# ============================================================
+.node_repl_history
+*.tgz
+.yarn-integrity
+
+# ============================================================
+# FRAMEWORK BUILD OUTPUT
+# ============================================================
+.next
+out
+.nuxt
+dist
+.cache/
+.vuepress/dist
+.temp
+.docusaurus
+
+# ============================================================
+# SERVERLESS
+# ============================================================
+.serverless/
+.fusebox/
+.dynamodb/
+
+# ============================================================
+# IDE & EDITOR
+# ============================================================
+.tern-port
+.vscode-test
+
+# VS Code (custom settings yang tidak ingin di-share)
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ============================================================
+# YARN V2+
+# ============================================================
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ============================================================
+# CLOUDFLARE WORKERS (CRITICAL!)
+# ============================================================
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+.wrangler/
+
+# Wrangler state & cache
+.mf/
+worker/
+
+# ============================================================
+# 🔴 SECURITY: GOOGLE OAUTH CREDENTIALS (JANGAN COMMIT!)
+# ============================================================
+# File-file ini berisi credentials yang SANGAT SENSITIF
+google-credentials.json
+service-account.json
+oauth-token.json
+refresh-token.txt
+client_secret*.json
+
+# Backup files yang mungkin berisi secrets
+*.backup
+*.bak
+secrets.txt
+notes.txt
+
+# ============================================================
+# OS FILES
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.directory
+
+# ============================================================
+# TEMPORARY FILES
+# ============================================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ============================================================
+# PROJECT SPECIFIC (ZDRIVE)
+# ============================================================
+# Local development config
+wrangler.local.toml
+
+# Test data dengan secrets
+test-data/
+*.test.local.js
+
+# Backup & archives
+backup/
+*.zip
+*.tar.gz
+
+# Documentation drafts (uncomment jika tidak ingin commit)
+# drafts/
+# TODO.md
+# NOTES.md
+
+# ============================================================
+# END OF GITIGNORE
+# ============================================================
