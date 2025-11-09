@@ -1,14 +1,8 @@
 // ============================================================
 // ZDRIVE - Google Drive Browser on Cloudflare Workers
-// Version: 2.2 ENHANCED (2025-01-08)
+// Version: 2.2.4 STABLE (2025-01-08)
 // Author: d1ts05
-// Enhancements: Skeleton, Animations, View Modes, Gallery, etc.
-// ============================================================
-// Secrets yang WAJIB diset via CLI:
-// npx wrangler secret put GOOGLE_CLIENT_ID
-// npx wrangler secret put GOOGLE_CLIENT_SECRET
-// npx wrangler secret put GOOGLE_REFRESH_TOKEN
-// npx wrangler secret put ROOT_FOLDER_ID
+// Changelog: Fixed modal structure restoration, event listener leaks, and various improvements
 // ============================================================
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -87,7 +81,7 @@ function encodeRFC5987ValueChars(str) {
 }
 
 /* ============================================================
-   API: LIST FILES (dengan cache 60s)
+   API: LIST FILES
 ============================================================ */
 
 async function listFiles(env, folderId, pageToken, ctx) {
@@ -126,10 +120,6 @@ async function listFiles(env, folderId, pageToken, ctx) {
   return resp;
 }
 
-/* ============================================================
-   API: METADATA
-============================================================ */
-
 async function getMeta(env, fileId) {
   const token = await getAccessToken(env);
   const res = await fetch(
@@ -139,10 +129,6 @@ async function getMeta(env, fileId) {
   if (!res.ok) throw new Error(`Metadata fetch failed: ${res.status}`);
   return res.json();
 }
-
-/* ============================================================
-   API: DOWNLOAD
-============================================================ */
 
 async function downloadFile(env, fileId) {
   const allowed = await isDescendantOfRoot(env, fileId);
@@ -170,10 +156,6 @@ async function downloadFile(env, fileId) {
   return new Response(res.body, { status: res.status, headers });
 }
 
-/* ============================================================
-   API: PREVIEW (inline)
-============================================================ */
-
 async function previewFile(env, fileId) {
   const allowed = await isDescendantOfRoot(env, fileId);
   if (!allowed) return new Response("Forbidden", { status: 403 });
@@ -191,10 +173,6 @@ async function previewFile(env, fileId) {
   
   return new Response(res.body, { status: res.status, headers });
 }
-
-/* ============================================================
-   API: STREAM (video dengan Range support)
-============================================================ */
 
 async function streamFile(env, request, fileId) {
   const allowed = await isDescendantOfRoot(env, fileId);
@@ -215,10 +193,6 @@ async function streamFile(env, request, fileId) {
   h.set("accept-ranges", "bytes");
   return new Response(res.body, { status: res.status, headers: h });
 }
-
-/* ============================================================
-   API: DEEP SEARCH (BFS dengan cursor)
-============================================================ */
 
 function b64(json) {
   return btoa(unescape(encodeURIComponent(JSON.stringify(json))));
@@ -290,10 +264,6 @@ async function deepSearch(env, q, cursor) {
   return jsonOk({ files: results, nextCursor });
 }
 
-/* ============================================================
-   API: TREE (rekursif untuk ZIP folder)
-============================================================ */
-
 async function treeFiles(env, folderId) {
   const token = await getAccessToken(env);
 
@@ -352,7 +322,7 @@ async function treeFiles(env, folderId) {
 }
 
 /* ============================================================
-   HTML + CSS + JS (Frontend with Enhancements)
+   HTML + CSS + JS
 ============================================================ */
 
 function html(env) {
@@ -399,9 +369,6 @@ function html(env) {
   --badge:rgba(0,0,0,.06);
 }
 
-/* ============================================================
-   ENHANCEMENT 1.1: Smooth Page Transitions
-============================================================ */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -427,10 +394,23 @@ body {
 .card:nth-child(6) { animation-delay: 0.18s; }
 .card:nth-child(7) { animation-delay: 0.21s; }
 .card:nth-child(8) { animation-delay: 0.24s; }
+.card:nth-child(9) { animation-delay: 0.27s; }
+.card:nth-child(10) { animation-delay: 0.30s; }
+.card:nth-child(11) { animation-delay: 0.33s; }
+.card:nth-child(12) { animation-delay: 0.36s; }
+.card:nth-child(13) { animation-delay: 0.39s; }
+.card:nth-child(14) { animation-delay: 0.42s; }
+.card:nth-child(15) { animation-delay: 0.45s; }
+.card:nth-child(16) { animation-delay: 0.48s; }
+.card:nth-child(17) { animation-delay: 0.51s; }
+.card:nth-child(18) { animation-delay: 0.54s; }
+.card:nth-child(19) { animation-delay: 0.57s; }
+.card:nth-child(20) { animation-delay: 0.60s; }
+.card:nth-child(21) { animation-delay: 0.63s; }
+.card:nth-child(22) { animation-delay: 0.66s; }
+.card:nth-child(23) { animation-delay: 0.69s; }
+.card:nth-child(24) { animation-delay: 0.72s; }
 
-/* ============================================================
-   ENHANCEMENT 1.2: Skeleton Loading
-============================================================ */
 @keyframes shimmer {
   0% { background-position: -1000px 0; }
   100% { background-position: 1000px 0; }
@@ -487,9 +467,6 @@ body {
   border-radius: 12px;
 }
 
-/* ============================================================
-   ENHANCEMENT 1.4: Card Quick Actions (Hidden on Default)
-============================================================ */
 .card .actions {
   opacity: 0;
   transform: translateY(8px);
@@ -501,7 +478,6 @@ body {
   transform: translateY(0);
 }
 
-/* Always show on touch devices */
 @media (hover: none) {
   .card .actions {
     opacity: 1;
@@ -509,9 +485,6 @@ body {
   }
 }
 
-/* ============================================================
-   ENHANCEMENT 4.1: Enhanced Toast Animations
-============================================================ */
 @keyframes slideInRight {
   from {
     transform: translateX(400px);
@@ -568,9 +541,6 @@ body {
   to { transform: scale(1); }
 }
 
-/* ============================================================
-   ENHANCEMENT 4.4: Scroll to Top Button
-============================================================ */
 #scrollTop {
   position: fixed;
   bottom: 24px;
@@ -610,9 +580,6 @@ body {
   transform: scale(0.95);
 }
 
-/* ============================================================
-   ENHANCEMENT 2.2: Image Gallery Thumbnails
-============================================================ */
 .img-gallery {
   position: fixed;
   bottom: 12px;
@@ -665,9 +632,6 @@ body {
   box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
 }
 
-/* ============================================================
-   ENHANCEMENT 2.4: View Mode Toggle (List/Grid)
-============================================================ */
 .view-toggle {
   display: flex;
   gap: 4px;
@@ -706,37 +670,82 @@ body {
   min-height: auto;
   padding: 12px 16px;
   gap: 12px;
+  position: relative;
+  overflow: visible;
 }
 
 .grid.list-view .card .name {
   flex: 1;
   margin: 0;
-  padding-right: 12px;
-}
-
-.grid.list-view .card .meta {
-  margin-bottom: 0;
-  gap: 8px;
+  padding-right: 16px;
+  min-width: 0;
 }
 
 .grid.list-view .card .actions {
   flex-direction: row;
   margin-top: 0;
-  margin-left: auto;
+  margin-right: 8px;
   gap: 6px;
+  order: 2;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.grid.list-view .card:hover .actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.grid.list-view .card .meta {
+  margin-bottom: 0;
+  gap: 6px;
+  order: 3;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.grid.list-view .card .menu-trigger {
+  position: static;
+  order: 4;
+  margin-left: 0;
+  flex-shrink: 0;
+}
+
+.grid.list-view .card .menu {
+  position: absolute;
+  top: auto;
+  bottom: 100%;
+  right: 10px;
+  margin-bottom: 4px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.grid.list-view .card .menu.open {
+  display: block;
+  animation: slideDown 0.2s ease;
 }
 
 .grid.list-view .card .actions .btn-sm {
   width: auto;
+  padding: 6px 10px;
+  font-size: 12px;
 }
 
 .grid.list-view .card::after {
   display: none;
 }
 
-/* ============================================================
-   ENHANCEMENT 1.3: Breadcrumb Hover Tooltip
-============================================================ */
 .crumbs span {
   position: relative;
 }
@@ -762,9 +771,6 @@ body {
   animation: fadeIn 0.2s ease;
 }
 
-/* ============================================================
-   ENHANCEMENT 4.3: Pull to Refresh Indicator
-============================================================ */
 #pullRefresh {
   position: fixed;
   top: 0;
@@ -798,14 +804,61 @@ body {
   vertical-align: middle;
 }
 
-/* Rest of original styles */
 *{box-sizing:border-box}
 body{margin:0;font-family:ui-sans-serif,system-ui,Segoe UI,Roboto;background:var(--bg);color:var(--text);touch-action:manipulation}
 header{position:sticky;top:0;z-index:10;backdrop-filter:var(--glass);background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.15));border-bottom:1px solid var(--line)}
 .wrap{max-width:1180px;margin:0 auto;padding:12px 16px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .brand{font-weight:700;letter-spacing:.3px}
-input[type=text]{flex:1;min-width:220px;padding:10px 12px;border-radius:12px;background:var(--panel);border:1px solid var(--line);color:var(--text);backdrop-filter:var(--glass)}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+input[type=text]{
+  flex:1;
+  width: 100%;
+  min-width:220px;
+  padding:10px 36px 10px 12px;
+  border-radius:12px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  color:var(--text);
+  backdrop-filter:var(--glass)
+}
+
+.search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--btn-hover);
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.search-clear:hover {
+  opacity: 1;
+  background: var(--btn-line);
+}
+
+.search-clear.visible {
+  display: flex;
+}
+
 select{padding:8px 10px;border-radius:12px;background:var(--panel);border:1px solid var(--line);color:var(--text);backdrop-filter:var(--glass)}
 .btn,.btn-sm{padding:8px 10px;background:var(--btn);border:1px solid var(--btn-line);border-radius:var(--radius);color:var(--text);display:inline-block;text-align:center;text-decoration:none;font-size:13px;line-height:1.3;white-space:nowrap}
 .btn:hover,.btn-sm:hover{background:var(--btn-hover)}
@@ -825,17 +878,22 @@ button,.btn,.btn-sm,select,.crumbs span,.menu-trigger{cursor:pointer}
 .result-count{margin:12px 0 8px;font-size:14px;opacity:.85}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-top:10px;transition:all 0.3s ease}
-@media (min-width:480px){ .grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));} }
-@media (min-width:1024px){ .grid{gap:16px} }
 
-body.modal-open {
-  overflow: hidden;
+@media (min-width:480px){ 
+  .grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));} 
+}
+@media (min-width:768px){ 
+  .grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));} 
+}
+@media (min-width:1024px){ 
+  .grid{gap:16px} 
 }
 
-body.modal-open,
-body.modal-open #modal {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+  height: 100%;
 }
 
 #modal {
@@ -848,7 +906,45 @@ body.modal-open #modal {
   z-index: 50;
   backdrop-filter: blur(4px);
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#modal .box {
+  width: min(960px, 92vw);
+  max-height: 90vh;
+  background: var(--panel);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+
+#modal .content {
+  padding: 0;
+  overflow: auto;
+  position: relative;
+  background: var(--bg);
+  max-height: calc(90vh - 50px);
+}
+
+#modal .content.image {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  min-height: 60vh;
+  position: relative;
+  cursor: grab;
+}
+
+#modal .content.image.dragging {
+  cursor: grabbing;
 }
 
 .img-tools {
@@ -919,7 +1015,7 @@ body.modal-open #modal {
 }
 
 .plyr--audio {
-  padding: 12px 16px;
+  padding: 32px 16px;
 }
 
 .plyr__control--overlaid {
@@ -1029,11 +1125,19 @@ body.modal-open #modal {
 }
 
 .card{
-  position:relative;display:flex;flex-direction:column;
+  position:relative;
+  display:flex;
+  flex-direction:column;
   background:linear-gradient(140deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),var(--panel);
-  backdrop-filter:var(--glass);border:1px solid var(--line);border-radius:var(--radius);
-  padding:12px;transform:translateZ(0);transition:transform .15s ease;
-  min-height:160px;overflow:hidden;z-index:0;
+  backdrop-filter:var(--glass);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:12px;
+  transform:translateZ(0);
+  transition:transform .15s ease;
+  min-height:160px;
+  overflow:hidden;
+  z-index:0;
 }
 .card:hover{transform:scale(1.02)}
 .card::after{
@@ -1055,8 +1159,37 @@ body.modal-open #modal {
 .card.type-audio::after{-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 13c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V5h6v5h-6z"/></svg>');mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 13c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V5h6v5h-6z"/></svg>')}
 .card.type-pdf::after,.card.type-code::after{-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>');mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>')}
 
-.name{font-weight:600;margin:6px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);padding-right:36px}
-.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;color:var(--muted);font-size:11.5px;margin-bottom:8px}
+.name{
+  font-weight:600;
+  margin:6px 0 8px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:var(--text);
+  padding-right:36px
+}
+
+.meta{
+  display:flex;
+  flex-direction: column;
+  gap:4px;
+  color:var(--muted);
+  font-size:11.5px;
+  margin-bottom:8px
+}
+
+.meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+}
+
+.meta .size{
+  font-weight: 600;
+  font-size: 13px;
+}
+
 .dot::before{content:"\\2022";opacity:.6;margin:0 2px}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:999px;background:var(--badge);border:1px solid var(--line);font-size:10.5px;color:var(--text)}
 .ext{font-weight:600;letter-spacing:.3px}
@@ -1064,11 +1197,22 @@ body.modal-open #modal {
 .menu-trigger{position:absolute;top:8px;right:8px;background:transparent;border:1px solid var(--btn-line);border-radius:999px;padding:4px 8px;color:var(--text);opacity:.9;z-index:2;font-size:16px}
 .menu{position:absolute;top:36px;right:10px;min-width:200px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;display:none;backdrop-filter:var(--glass);z-index:5;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .menu.open{display:block}
-.menu .mi{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;font-size:13px}
+.menu .mi{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;font-size:13px;cursor:pointer}
 .menu .mi:hover{background:var(--btn-hover)}
 
-.actions{display:flex;flex-direction:column;gap:6px;margin-top:auto}
-.actions .btn-sm{display:block;width:100%;text-align:center}
+.actions{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:auto
+}
+.actions .btn-sm{
+  display:block;
+  width:100%;
+  text-align:center;
+  font-size: 12px;
+  padding: 7px 8px;
+}
 
 .pager{display:flex;gap:8px;margin:18px 0}
 
@@ -1087,8 +1231,9 @@ body.modal-open #modal {
 #modal .content.image .img-wrapper{position:relative;overflow:hidden;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 #modal .content.image img{max-width:100%;max-height:calc(90vh - 120px);display:block;transition:transform .2s ease;transform-origin:center;user-select:none;pointer-events:none}
 .img-tools{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--panel);backdrop-filter:var(--glass);padding:6px;border-radius:12px;border:1px solid var(--line);z-index:51}
+
 #modal .content.pdf{background:#525252;min-height:70vh}
-#modal .content.pdf iframe{width:100%;height:calc(90vh - 50px);border:none}
+#modal .content.pdf iframe{width:100%;height:calc(90vh - 50px);border:none;display:block}
 
 .textView{position:relative;padding:16px;padding-top:16px}
 .textView-tools{
@@ -1163,21 +1308,313 @@ body.modal-open #modal {
 .empty .msg{font-size:15px;font-weight:600;margin-bottom:8px}
 .empty .hint{font-size:13px;opacity:.7}
 
-@media (max-width:520px){
-  .wrap{padding:8px 12px}
-  input[type=text]{min-width:140px;padding:8px 10px}
-  select{padding:7px 9px}
-  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:8px}
+@media (max-width:640px){
+  .wrap{padding:10px 14px}
+  .search-wrapper{min-width:180px}
+  input[type=text]{min-width:180px;padding:8px 32px 8px 10px;font-size:14px}
+  select{padding:7px 9px;font-size:13px}
+  .toolbar{gap:8px}
+  .controls{gap:6px}
+  .view-toggle button{padding:5px 10px;font-size:11px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
   .card{min-height:150px;padding:10px}
-  .name{margin:4px 0 6px}
-  .meta{gap:4px;font-size:10.5px;margin-bottom:6px}
+  .name{margin:4px 0 6px;font-size:14px}
+  .meta{gap:3px;font-size:10.5px;margin-bottom:6px}
+  .meta .size{font-size:12px}
   .menu{min-width:170px}
   .actions{gap:5px}
+  .actions .btn-sm{font-size:11px;padding:6px 7px}
   #modal .box{width:95vw;max-height:95vh}
   .img-tools{bottom:8px;gap:4px;padding:4px}
   .img-tools .btn-sm{padding:6px 8px;font-size:11px}
   #scrollTop{bottom:16px;right:16px;width:40px;height:40px;font-size:20px}
+  .grid.list-view .card .name{max-width:none;font-size:13px}
+  .grid.list-view .card .actions .btn-sm{font-size:10px;padding:5px 8px}
+  .grid.list-view .card .meta{font-size:10px}
 }
+
+@media (max-width:400px){
+  .wrap{padding:8px 12px}
+  .brand{font-size:14px}
+  .search-wrapper{min-width:140px}
+  input[type=text]{min-width:140px;padding:7px 30px 7px 9px;font-size:13px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+  .card{min-height:140px;padding:9px}
+}
+
+.audio-modal-wrapper {
+  position: relative;
+  width: min(600px, 90vw);
+  padding: 24px;
+}
+
+.audio-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--panel);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 28px;
+  line-height  line-height: 1;
+  cursor: pointer;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.audio-close-btn:hover {
+  background: var(--btn-hover);
+  transform: scale(1.1);
+}
+
+.audio-close-btn:active {
+  transform: scale(0.95);
+}
+
+.audio-card {
+  background: var(--panel);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 48px 32px 40px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+.audio-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(96, 165, 250, 0.1) 0%, 
+    rgba(52, 211, 153, 0.1) 100%
+  );
+  border-radius: 24px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.audio-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.audio-cover {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 28px;
+  background: linear-gradient(135deg, #60a5fa, #34d399);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 12px 32px rgba(96, 165, 250, 0.4);
+}
+
+.audio-cover svg {
+  width: 70px;
+  height: 70px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+}
+
+.audio-info {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.audio-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 24px;
+}
+
+.audio-type {
+  font-size: 14px;
+  color: var(--muted);
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.audio-player-wrapper {
+  position: relative;
+  min-height: 80px;
+  padding-bottom: 10px;
+}
+
+.audio-player-wrapper .plyr--audio .plyr__controls {
+  background: var(--btn);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 10px 18px;
+  color: var(--text);
+}
+
+.audio-player-wrapper .plyr--audio .plyr__control,
+.audio-player-wrapper .plyr--audio .plyr__time {
+  color: var(--text) !important;
+}
+
+.audio-player-wrapper .plyr--audio .plyr__control:hover {
+  background: var(--btn-hover);
+}
+
+.audio-player-wrapper .plyr__progress input[type="range"] {
+  color: #60a5fa;
+}
+
+.audio-player-wrapper .plyr__volume input[type="range"] {
+  color: #34d399;
+}
+
+.audio-player-wrapper .plyr__menu__container {
+  background: var(--panel);
+  backdrop-filter: var(--glass);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.audio-player-wrapper .plyr__menu__container [role="menu"] {
+  background: transparent;
+}
+
+.audio-player-wrapper .plyr__menu__container [role="menuitemradio"],
+.audio-player-wrapper .plyr__menu__container [role="menuitem"] {
+  color: var(--text) !important;
+}
+
+.audio-player-wrapper .plyr__menu__container [role="menuitemradio"]:hover,
+.audio-player-wrapper .plyr__menu__container [role="menuitem"]:hover {
+  background: var(--btn-hover);
+}
+
+.audio-player-wrapper .plyr__menu__container [role="menuitemradio"][aria-checked="true"]::before {
+  background: #60a5fa;
+}
+
+.audio-player-wrapper .plyr__tooltip {
+  background: var(--panel);
+  backdrop-filter: var(--glass);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 640px) {
+  .audio-modal-wrapper {
+    width: 95vw;
+    padding: 16px;
+  }
+  
+  .audio-close-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 24px;
+    top: 12px;
+    right: 12px;
+  }
+  
+  .audio-card {
+    padding: 40px 24px 32px;
+    border-radius: 20px;
+  }
+  
+  .audio-cover {
+    width: 110px;
+    height: 110px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+  }
+  
+  .audio-cover svg {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .audio-title {
+    font-size: 17px;
+    padding: 0 16px;
+  }
+  
+  .audio-type {
+    font-size: 13px;
+  }
+  
+  .audio-info {
+    margin-bottom: 28px;
+  }
+  
+  .audio-player-wrapper {
+    padding-bottom: 50px;
+  }
+  
+  .audio-player-wrapper .plyr--audio .plyr__controls {
+    padding: 14px 16px;
+  }
+}
+
+:root[data-theme="dark"] .audio-card {
+  box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+}
+
+:root[data-theme="dark"] .audio-player-wrapper .plyr__menu__container {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+:root[data-theme="light"] .audio-card {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+}
+
+:root[data-theme="light"] .audio-card::before {
+  background: linear-gradient(135deg, 
+    rgba(96, 165, 250, 0.06) 0%, 
+    rgba(52, 211, 153, 0.06) 100%
+  );
+}
+
+:root[data-theme="light"] .audio-cover {
+  box-shadow: 0 12px 32px rgba(96, 165, 250, 0.3);
+}
+
+:root[data-theme="light"] .audio-close-btn {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+:root[data-theme="light"] .audio-player-wrapper .plyr__menu__container {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.btn-sm[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-sm svg {
+  vertical-align: middle;
+}
+
 </style>
 </head>
 <body>
@@ -1185,7 +1622,11 @@ body.modal-open #modal {
   <div class="wrap row toolbar">
     <div class="brand">Zivalez GDrive</div>
 
-    <input id="q" type="text" placeholder="Cari nama file/folder… (Enter untuk cari)" aria-label="Search"/>
+    <div class="search-wrapper">
+      <input id="q" type="text" placeholder="Cari nama file/folder… (Enter untuk cari)" aria-label="Search"/>
+      <button class="search-clear" id="searchClear" aria-label="Clear search" title="Hapus pencarian">×</button>
+    </div>
+    
     <select id="scope" title="Ruang lingkup pencarian" aria-label="Search scope">
       <option value="folder">Cari di folder ini</option>
       <option value="all">Cari di seluruh ZDRIVE</option>
@@ -1221,7 +1662,6 @@ body.modal-open #modal {
       <option value="docs">Docs</option>
     </select>
 
-    <!-- ENHANCEMENT 2.4: View Mode Toggle -->
     <div class="view-toggle">
       <button id="viewGrid" class="active" aria-label="Grid view">Grid</button>
       <button id="viewList" aria-label="List view">List</button>
@@ -1266,10 +1706,8 @@ body.modal-open #modal {
   <div id="zipNote" style="margin-top:6px;font-size:12px;opacity:.9"></div>
 </div>
 
-<!-- ENHANCEMENT 4.4: Scroll to Top Button -->
 <button id="scrollTop" aria-label="Scroll to top">↑</button>
 
-<!-- ENHANCEMENT 4.3: Pull to Refresh Indicator -->
 <div id="pullRefresh">
   <span class="spinner-small"></span>
   <span>Memuat ulang...</span>
@@ -1291,9 +1729,6 @@ body.modal-open #modal {
   };
 })();
 
-/* ============================================================
-   ENHANCEMENT 1.2: Skeleton Loading
-============================================================ */
 const $loading = document.getElementById("loading");
 function setLoading(v){ 
   if(v){
@@ -1303,28 +1738,44 @@ function setLoading(v){
   }
 }
 
-function showSkeletonLoader(){
-  const container = document.getElementById("container");
-  const skeletons = Array(8).fill(0).map(() => 
-    '<div class="skeleton-card">' +
-    '  <div class="skeleton-line title"></div>' +
-    '  <div class="skeleton-line meta"></div>' +
-    '  <div class="skeleton-line meta" style="width:40%"></div>' +
-    '  <div style="flex:1"></div>' +
-    '  <div class="skeleton-line btn"></div>' +
-    '</div>'
-  ).join('');
+let skeletonGridTemplate = null;
+let skeletonListTemplate = null;
+
+function initSkeletonTemplates() {
+  const gridHTML = Array(8).fill(0).map(() => {
+    return '<div class="skeleton-card">' +
+      '  <div class="skeleton-line title"></div>' +
+      '  <div class="skeleton-line meta"></div>' +
+      '  <div class="skeleton-line meta" style="width:40%"></div>' +
+      '  <div style="flex:1"></div>' +
+      '  <div class="skeleton-line btn"></div>' +
+      '</div>';
+  }).join('');
   
-  container.innerHTML = '<div class="grid">' + skeletons + '</div>';
+  const listHTML = Array(8).fill(0).map(() => {
+    return '<div class="skeleton-card" style="flex-direction:row;align-items:center;min-height:auto;padding:12px 16px;gap:12px">' +
+      '  <div class="skeleton-line" style="width:200px;height:16px;margin:0"></div>' +
+      '  <div class="skeleton-line" style="width:80px;height:28px;margin:0"></div>' +
+      '  <div class="skeleton-line" style="width:150px;height:12px;margin:0;margin-left:auto"></div>' +
+      '  <div class="skeleton-line" style="width:24px;height:24px;margin:0;border-radius:50%"></div>' +
+      '</div>';
+  }).join('');
+  
+  skeletonGridTemplate = '<div class="grid">' + gridHTML + '</div>';
+  skeletonListTemplate = '<div class="grid list-view">' + listHTML + '</div>';
+}
+
+function showSkeletonLoader(){
+  if(!skeletonGridTemplate) initSkeletonTemplates();
+  
+  const container = document.getElementById("container");
+  const isListView = state.viewMode === "list";
+  container.innerHTML = isListView ? skeletonListTemplate : skeletonGridTemplate;
 }
 
 function hideSkeletonLoader(){
-  // Loading will be hidden when render() is called
 }
 
-/* ============================================================
-   ENHANCEMENT 4.1: Enhanced Toast with Animations
-============================================================ */
 const $toasts = document.getElementById("toasts");
 function toastSimple(msg, type="ok"){
   const el = document.createElement("div");
@@ -1363,8 +1814,59 @@ const state = {
   searchItems: [],
   sortField: "name",
   filter: "all",
-  viewMode: localStorage.getItem("zdrive-view-mode") || "grid", // ENHANCEMENT 2.4
+  viewMode: localStorage.getItem("zdrive-view-mode") || "grid",
 };
+
+let currentAudioPlayer = null;
+let currentVideoPlayer = null;
+
+let savedScrollPosition = 0;
+let scrollbarWidth = 0;
+
+function getScrollbarWidth() {
+  if(scrollbarWidth !== 0) return scrollbarWidth;
+  
+  const outer = document.createElement('div');
+  outer.style.visibility = 'hidden';
+  outer.style.overflow = 'scroll';
+  document.body.appendChild(outer);
+  
+  const inner = document.createElement('div');
+  outer.appendChild(inner);
+  
+  scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+  outer.remove();
+  
+  return scrollbarWidth;
+}
+
+function lockBody() {
+  savedScrollPosition = window.scrollY || window.pageYOffset;
+  
+  const sbWidth = getScrollbarWidth();
+  
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + savedScrollPosition + 'px';
+  document.body.style.width = '100%';
+  
+  if(sbWidth > 0) {
+    document.body.style.paddingRight = sbWidth + 'px';
+  }
+  
+  document.body.classList.add("modal-open");
+}
+
+function unlockBody() {
+  document.body.style.removeProperty('overflow');
+  document.body.style.removeProperty('position');
+  document.body.style.removeProperty('top');
+  document.body.style.removeProperty('width');
+  document.body.style.removeProperty('padding-right');
+  document.body.classList.remove("modal-open");
+  
+  window.scrollTo(0, savedScrollPosition);
+}
 
 function fmtSize(s){ if(!s||s==="0") return "-"; let n=+s,u=["B","KB","MB","GB","TB"],i=0; while(n>=1024&&i<u.length-1){n/=1024;i++} return (n<10?n.toFixed(2):n.toFixed(1))+" "+u[i] }
 function fmtTime(s){ if(!s) return ""; const d=new Date(s); const now=new Date(); const diff=now-d; if(diff<7*24*60*60*1000) return "Baru diubah"; return d.toLocaleDateString("id-ID",{year:"numeric",month:"short",day:"numeric"}) }
@@ -1427,9 +1929,8 @@ async function apiTree(folderId){
   return r.json();
 }
 
-/* ============================================================
-   ENHANCEMENT 1.3: Breadcrumb with Tooltip
-============================================================ */
+
+
 function renderPathControls(){
   const crumbs = document.getElementById("crumbs");
   const btnBack = document.getElementById("btnBack");
@@ -1456,7 +1957,6 @@ function renderPathControls(){
     const realIdx = i >= 2 && state.stack.length > MAX_SEGMENTS
       ? state.stack.length - (segments.length - i)
       : i;
-    // ENHANCEMENT 1.3: Add data-fullname for tooltip
     return '<span data-i="'+realIdx+'" data-fullname="'+escapeHtml(c.name)+'">'+escapeHtml(c.name)+'</span>';
   }).join(" / ");
   
@@ -1575,17 +2075,29 @@ function render(){
       ? '<div class="mi" data-zip="'+it.id+'" data-zipname="'+encodeURIComponent(it.name)+'">Download Folder (ZIP)</div>'
       : '<div class="mi" data-copylink="'+it.id+'" data-linkname="'+encodeURIComponent(it.name)+'">Copy Link Download</div>';
 
+    let metaHTML = '';
+    if(folder){
+      metaHTML = '<div class="meta">'
+        + '<div class="meta-row"><span class="badge">Folder</span></div>'
+        + '<div class="meta-row"><span>'+fmtTime(it.modifiedTime)+'</span></div>'
+        + '</div>';
+    } else {
+      metaHTML = '<div class="meta">'
+        + '<div class="meta-row"><span class="size">'+fmtSize(it.size)+'</span></div>'
+        + '<div class="meta-row">'
+        +   '<span class="badge">File</span>'
+        +   (ext ? '<span class="ext">'+ext+'</span>' : '')
+        +   '<span class="dot"></span><span>'+fmtTime(it.modifiedTime)+'</span>'
+        + '</div>'
+        + '</div>';
+    }
+
     html.push(
       '<div class="card '+typeClass+'" '+(folder?'data-open="'+it.id+'"':'')+'>'
       +  '<button class="menu-trigger" data-menu="'+it.id+'" aria-label="Menu">⋮</button>'
       +  '<div class="menu" id="menu-'+it.id+'" role="menu">'+ menuItems +'</div>'
       +  '<div class="name" title="'+escapeHtml(it.name)+'">'+hi(it.name, state.q)+'</div>'
-      +  '<div class="meta">'
-      +    (folder ? '<span class="badge">Folder</span>' : '<span class="badge">File</span>')
-      +    (!folder && ext ? '<span class="ext">'+ext+'</span>' : '')
-      +    (!folder ? '<span class="dot"></span><span>'+fmtSize(it.size)+'</span>' : '')
-      +    '<span class="dot"></span><span>'+fmtTime(it.modifiedTime)+'</span>'
-      +  '</div>'
+      +  metaHTML
       +  '<div class="actions">'
       +      (btnDownload || '')
       +      (btnPreview || '')
@@ -1609,32 +2121,45 @@ function render(){
   });
 
   document.querySelectorAll("[data-view]").forEach(el=>{
-    el.onclick=()=> openPreview(
-      el.getAttribute("data-view"),
-      decodeURIComponent(el.getAttribute("data-name")),
-      decodeURIComponent(el.getAttribute("data-mime"))
-    );
+    el.onclick=(e)=> {
+      e.preventDefault();
+      e.stopPropagation();
+      openPreview(
+        el.getAttribute("data-view"),
+        decodeURIComponent(el.getAttribute("data-name")),
+        decodeURIComponent(el.getAttribute("data-mime"))
+      );
+    };
   });
-  
+
   document.querySelectorAll("[data-watch]").forEach(el=>{
-    el.onclick=()=> openWatch(
-      el.getAttribute("data-watch"),
-      decodeURIComponent(el.getAttribute("data-name")),
-      decodeURIComponent(el.getAttribute("data-mime"))
-    );
+    el.onclick=(e)=> {
+      e.preventDefault();
+      e.stopPropagation();
+      openWatch(
+        el.getAttribute("data-watch"),
+        decodeURIComponent(el.getAttribute("data-name")),
+        decodeURIComponent(el.getAttribute("data-mime"))
+      );
+    };
   });
-  
+
   document.querySelectorAll("[data-download]").forEach(el=>{
-    el.onclick=()=> downloadFileHandler(
-      el.getAttribute("data-download"),
-      decodeURIComponent(el.getAttribute("data-dlname"))
-    );
+    el.onclick=(e)=> {
+      e.preventDefault();
+      e.stopPropagation();
+      downloadFileHandler(
+        el.getAttribute("data-download"),
+        decodeURIComponent(el.getAttribute("data-dlname"))
+      );
+    };
   });
 
   setupMenus(items);
-
   imageList = items.filter(it=> isImage(it.mimeType));
 }
+
+let menuClickListenerAttached = false;
 
 function setupMenus(items){
   document.querySelectorAll(".menu-trigger").forEach(btn=>{
@@ -1647,9 +2172,14 @@ function setupMenus(items){
     };
   });
   
-  document.addEventListener("click", ()=> {
-    document.querySelectorAll(".menu.open").forEach(m=>m.classList.remove("open"));
-  });
+  if(!menuClickListenerAttached) {
+    document.addEventListener("click", (e)=> {
+      if(!e.target.closest(".menu") && !e.target.closest(".menu-trigger")) {
+        document.querySelectorAll(".menu.open").forEach(m=>m.classList.remove("open"));
+      }
+    });
+    menuClickListenerAttached = true;
+  }
 
   document.querySelectorAll(".menu .mi[data-copylink]").forEach(mi=>{
     mi.onclick = async ()=>{
@@ -1722,14 +2252,36 @@ async function runSearch(loadMore=false){
   }
 }
 
-/* ============================================================
-   ENHANCEMENT 3.3: Debounced Search Input
-============================================================ */
+const searchInput = document.getElementById("q");
+const searchClear = document.getElementById("searchClear");
+
+function updateSearchClearButton(){
+  if(searchInput.value.trim()){
+    searchClear.classList.add("visible");
+  } else {
+    searchClear.classList.remove("visible");
+  }
+}
+
+searchClear.onclick = ()=>{
+  searchInput.value = "";
+  state.q = "";
+  updateSearchClearButton();
+  if(state.mode === "browse"){
+    render();
+  } else {
+    state.mode = "browse";
+    load(state.stack.at(-1).id);
+  }
+  searchInput.focus();
+};
+
 let searchDebounceTimer;
-document.getElementById("q").addEventListener("keydown", (e)=>{
+searchInput.addEventListener("keydown", (e)=>{
   if(e.key==="Enter"){
     clearTimeout(searchDebounceTimer);
     state.q = e.target.value.trim();
+    updateSearchClearButton();
     if((document.getElementById("scope").value||"folder")==="all"){
       if(!state.q){
         toastErr("Masukkan kata kunci untuk mencari di seluruh ZDRIVE.");
@@ -1743,12 +2295,13 @@ document.getElementById("q").addEventListener("keydown", (e)=>{
   }
 });
 
-document.getElementById("q").addEventListener("input", (e)=>{
+searchInput.addEventListener("input", (e)=>{
+  updateSearchClearButton();
   clearTimeout(searchDebounceTimer);
   searchDebounceTimer = setTimeout(()=>{
     state.q = e.target.value;
     if(state.mode==="browse") render();
-  }, 300); // 300ms debounce
+  }, 300);
 });
 
 document.getElementById("scope").onchange = ()=>{
@@ -1772,9 +2325,6 @@ document.getElementById("filterType").onchange = (e)=>{
   render();
 };
 
-/* ============================================================
-   ENHANCEMENT 2.4: View Mode Toggle
-============================================================ */
 const viewGrid = document.getElementById("viewGrid");
 const viewList = document.getElementById("viewList");
 
@@ -1795,33 +2345,75 @@ function setViewMode(mode){
 
 viewGrid.onclick = ()=> setViewMode("grid");
 viewList.onclick = ()=> setViewMode("list");
-
-// Initialize view mode
 setViewMode(state.viewMode);
 
-/* ============================================================
-   MODAL & PREVIEW
-============================================================ */
 const $modal = document.getElementById("modal");
-const $modalTitle = document.getElementById("modalTitle");
-const $modalContent = document.getElementById("modalContent");
+
+function ensureModalStructure() {
+  const hasBox = $modal.querySelector('.box');
+  const hasAudioWrapper = $modal.querySelector('.audio-modal-wrapper');
+  
+  if(hasAudioWrapper || !hasBox) {
+    $modal.innerHTML = 
+      '<div class="box">' +
+      '  <div class="bar">' +
+      '    <div id="modalTitle" class="title"></div>' +
+      '    <div class="tools">' +
+      '      <button class="btn-sm" id="modalClose" aria-label="Close">Kembali</button>' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="content" id="modalContent"></div>' +
+      '</div>';
+    
+    const closeBtn = document.getElementById("modalClose");
+    if(closeBtn) closeBtn.onclick = closeModal;
+    
+    $modal.onclick = (e)=>{
+      if(e.target === $modal){
+        closeModal();
+      }
+    };
+  }
+}
 
 function closeModal(){
-  $modal.style.display = "none";
-  $modalContent.className = "content";
-  $modalContent.innerHTML = "";
+  if(currentAudioPlayer){
+    try {
+      currentAudioPlayer.stop();
+      currentAudioPlayer.destroy();
+      currentAudioPlayer = null;
+    } catch(e){
+      console.log('Error destroying audio player:', e);
+    }
+  }
   
-  // ENHANCEMENT 2.2: Remove gallery if exists
+  if(currentVideoPlayer){
+    try {
+      currentVideoPlayer.stop();
+      currentVideoPlayer.destroy();
+      currentVideoPlayer = null;
+    } catch(e){
+      console.log('Error destroying video player:', e);
+    }
+  }
+  
   const gallery = document.getElementById("imgGallery");
   if(gallery) gallery.remove();
   
   const imgTools = document.getElementById("imgTools");
   if(imgTools) imgTools.remove();
   
-  document.body.classList.remove("modal-open");
+  ensureModalStructure();
+  
+  const modalContent = document.getElementById("modalContent");
+  if(modalContent) {
+    modalContent.className = "content";
+    modalContent.innerHTML = "";
+  }
+  
+  $modal.style.display = "none";
+  unlockBody();
 }
-
-document.getElementById("modalClose").onclick = closeModal;
 
 $modal.onclick = (e)=>{
   if(e.target === $modal){
@@ -1836,16 +2428,65 @@ document.addEventListener("keydown", (e)=>{
 });
 
 async function downloadFileHandler(id, name){
+  const downloadBtn = document.querySelector('[data-download="' + id + '"]');
+  
+  if(!downloadBtn) {
+    try{
+      const u = new URL(location.href);
+      u.pathname="/api/download";
+      u.search="";
+      u.searchParams.set("id", id);
+      const r = await fetch(u);
+      if(!r.ok){
+        toastErr("Gagal mengunduh file");
+        return;
+      }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toastOk("Download selesai");
+    } catch(e){
+      toastErr("Error saat download: " + (e.message||e));
+    }
+    return;
+  }
+  
+  const originalHTML = downloadBtn.innerHTML;
+  const originalDisabled = downloadBtn.disabled;
+  
   try{
+    downloadBtn.disabled = true;
+    downloadBtn.innerHTML = 
+      '<svg style="display:inline-block;width:14px;height:14px;margin-right:4px;animation:spin 0.6s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">' +
+      '<circle cx="12" cy="12" r="10" opacity="0.25"/>' +
+      '<path d="M12 2a10 10 0 0 1 10 10" opacity="0.75"/>' +
+      '</svg>' +
+      'Downloading...';
+    
     const u = new URL(location.href);
     u.pathname="/api/download";
     u.search="";
     u.searchParams.set("id", id);
+    
     const r = await fetch(u);
+    
     if(!r.ok){
-      toastErr("Gagal mengunduh file");
-      return;
+      throw new Error("Download failed: " + r.status);
     }
+    
+    downloadBtn.innerHTML = 
+      '<svg style="display:inline-block;width:14px;height:14px;margin-right:4px;animation:spin 0.6s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">' +
+      '<circle cx="12" cy="12" r="10" opacity="0.25"/>' +
+      '<path d="M12 2a10 10 0 0 1 10 10" opacity="0.75"/>' +
+      '</svg>' +
+      'Preparing...';
+    
     const blob = await r.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1854,22 +2495,44 @@ async function downloadFileHandler(id, name){
     document.body.appendChild(a);
     a.click();
     a.remove();
-    URL.revokeObjectURL(url);
-    toastOk("Download selesai");
+    
+    downloadBtn.innerHTML = 
+      '<svg style="display:inline-block;width:14px;height:14px;margin-right:4px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">' +
+      '<polyline points="20 6 9 17 4 12"/>' +
+      '</svg>' +
+      'Downloaded!';
+    
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      downloadBtn.innerHTML = originalHTML;
+      downloadBtn.disabled = originalDisabled;
+    }, 2000);
+    
+    toastOk("Download selesai: " + name);
+    
   } catch(e){
+    downloadBtn.innerHTML = 
+      '<svg style="display:inline-block;width:14px;height:14px;margin-right:4px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">' +
+      '<circle cx="12" cy="12" r="10"/>' +
+      '<line x1="15" y1="9" x2="9" y2="15"/>' +
+      '<line x1="9" y1="9" x2="15" y2="15"/>' +
+      '</svg>' +
+      'Failed';
+    
+    setTimeout(() => {
+      downloadBtn.innerHTML = originalHTML;
+      downloadBtn.disabled = originalDisabled;
+    }, 2000);
+    
     toastErr("Error saat download: " + (e.message||e));
   }
 }
 
-/* ============================================================
-   ENHANCEMENT 2.2: Image Gallery Thumbnails
-============================================================ */
 function createImageGallery(images, currentIndex){
-  // Remove old gallery if exists
   const oldGallery = document.getElementById("imgGallery");
   if(oldGallery) oldGallery.remove();
   
-  if(images.length <= 1) return; // No gallery for single image
+  if(images.length <= 1) return;
   
   const gallery = document.createElement("div");
   gallery.id = "imgGallery";
@@ -1889,7 +2552,6 @@ function createImageGallery(images, currentIndex){
   
   document.body.appendChild(gallery);
   
-  // Auto-scroll to active thumbnail
   setTimeout(()=>{
     const activeThumb = gallery.querySelector(".active");
     if(activeThumb){
@@ -1900,11 +2562,23 @@ function createImageGallery(images, currentIndex){
 
 async function openPreview(id, name, mime){
   try{
-    setLoading(true);
+    lockBody();
     
-    document.body.classList.add("modal-open");
+    ensureModalStructure();
     
-    $modalTitle.textContent = name;
+    const modalTitle = document.getElementById("modalTitle");
+    const modalContent = document.getElementById("modalContent");
+    
+    if(!modalTitle || !modalContent) {
+      console.error("Modal elements not found after ensuring structure");
+      throw new Error("Modal elements not found");
+    }
+    
+    modalTitle.textContent = name;
+    modalContent.className = "content";
+    
+    modalContent.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:300px"><div class="spinner"></div></div>';
+    $modal.style.display = "flex";
     
     if (mime === "application/pdf" || name.toLowerCase().endsWith(".pdf")) {
       const url = new URL(location.href);
@@ -1913,10 +2587,10 @@ async function openPreview(id, name, mime){
       url.searchParams.set("id", id);
       url.searchParams.set("inline", "true");
       
-      $modalContent.className = "content pdf";
-      $modalContent.innerHTML = '<iframe title="'+escapeHtml(name)+'"></iframe>';
+      modalContent.className = "content pdf";
+      modalContent.innerHTML = '<iframe title="'+escapeHtml(name)+'"></iframe>';
       
-      const iframe = $modalContent.querySelector('iframe');
+      const iframe = modalContent.querySelector('iframe');
       
       fetch(url)
         .then(r => {
@@ -1928,19 +2602,21 @@ async function openPreview(id, name, mime){
           const blobUrl = URL.createObjectURL(pdfBlob);
           iframe.src = blobUrl;
           
-          iframe.onload = () => setLoading(false);
+          iframe.onload = () => {
+            console.log('PDF loaded successfully');
+          };
           
-          $modal.addEventListener('hidden', () => {
-            URL.revokeObjectURL(blobUrl);
-          }, { once: true });
+          iframe.onerror = (e) => {
+            console.error('PDF load error:', e);
+            modalTitle.textContent = "Gagal membuka PDF";
+            modalContent.innerHTML = '<div style="padding:32px;text-align:center">Error: Gagal memuat PDF. Coba download file ini.</div>';
+          };
         })
         .catch(e => {
-          $modalTitle.textContent = "Gagal membuka PDF";
-          $modalContent.textContent = "Error: " + e.message;
-          setLoading(false);
+          modalTitle.textContent = "Gagal membuka PDF";
+          modalContent.innerHTML = '<div style="padding:32px;text-align:center">Error: ' + escapeHtml(e.message) + '</div>';
         });
       
-      $modal.style.display="flex";
       return;
     }
     
@@ -1951,10 +2627,9 @@ async function openPreview(id, name, mime){
     const resp = await fetch(url);
     
     if(!resp.ok){
-      $modalTitle.textContent = "Gagal membuka file";
-      $modalContent.className="content";
-      $modalContent.textContent = "Error: " + resp.status + " - " + await resp.text();
-      $modal.style.display="flex";
+      modalTitle.textContent = "Gagal membuka file";
+      modalContent.className="content";
+      modalContent.innerHTML = '<div style="padding:32px;text-align:center">Error: ' + resp.status + '</div>';
       return;
     }
     
@@ -1963,13 +2638,13 @@ async function openPreview(id, name, mime){
     if (ctype.startsWith("image/")) {
       const blob = await resp.blob();
       const src = URL.createObjectURL(blob);
-      $modalContent.className = "content image";
-      $modalContent.innerHTML = 
+      modalContent.className = "content image";
+      modalContent.innerHTML = 
         '<div class="img-wrapper">' +
         '  <img id="previewImg" alt="'+escapeHtml(name)+'" draggable="false"/>' +
         '</div>';
       
-      const img = $modalContent.querySelector("#previewImg");
+      const img = modalContent.querySelector("#previewImg");
       img.src = src;
       
       const oldTools = document.getElementById("imgTools");
@@ -2018,25 +2693,16 @@ async function openPreview(id, name, mime){
         downloadFileHandler(id, name);
       };
       
-      $modalContent.addEventListener("wheel", (e)=>{
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const delta = e.deltaY > 0 ? -0.1 : 0.1;
-        zoomLevel = Math.max(0.25, Math.min(5, zoomLevel + delta));
-        updateTransform();
-      }, {passive: false});
-      
-      $modalContent.addEventListener("mousedown", (e)=>{
+      modalContent.addEventListener("mousedown", (e)=>{
         if(zoomLevel > 1){
           isDragging = true;
           startX = e.clientX - translateX;
           startY = e.clientY - translateY;
-          $modalContent.classList.add("dragging");
+          modalContent.classList.add("dragging");
         }
       });
       
-      $modalContent.addEventListener("mousemove", (e)=>{
+      modalContent.addEventListener("mousemove", (e)=>{
         if(isDragging){
           translateX = e.clientX - startX;
           translateY = e.clientY - startY;
@@ -2044,22 +2710,21 @@ async function openPreview(id, name, mime){
         }
       });
       
-      $modalContent.addEventListener("mouseup", ()=>{
+      modalContent.addEventListener("mouseup", ()=>{
         isDragging = false;
-        $modalContent.classList.remove("dragging");
+        modalContent.classList.remove("dragging");
       });
       
-      $modalContent.addEventListener("mouseleave", ()=>{
+      modalContent.addEventListener("mouseleave", ()=>{
         isDragging = false;
-        $modalContent.classList.remove("dragging");
+        modalContent.classList.remove("dragging");
       });
       
       let touchStartDist = 0;
       let touchStartZoom = 1;
       
-      $modalContent.addEventListener("touchstart", (e)=>{
+      modalContent.addEventListener("touchstart", (e)=>{
         e.stopPropagation();
-        
         if(e.touches.length === 2){
           const dx = e.touches[0].clientX - e.touches[1].clientX;
           const dy = e.touches[0].clientY - e.touches[1].clientY;
@@ -2072,10 +2737,9 @@ async function openPreview(id, name, mime){
         }
       }, {passive: false});
       
-      $modalContent.addEventListener("touchmove", (e)=>{
+      modalContent.addEventListener("touchmove", (e)=>{
         e.preventDefault();
         e.stopPropagation();
-        
         if(e.touches.length === 2){
           const dx = e.touches[0].clientX - e.touches[1].clientX;
           const dy = e.touches[0].clientY - e.touches[1].clientY;
@@ -2089,11 +2753,10 @@ async function openPreview(id, name, mime){
         }
       }, {passive: false});
       
-      $modalContent.addEventListener("touchend", ()=>{
+      modalContent.addEventListener("touchend", ()=>{
         isDragging = false;
       });
       
-      // ENHANCEMENT 2.2: Create gallery thumbnails
       currentImageIndex = imageList.findIndex(it=> it.id === id);
       createImageGallery(imageList, currentImageIndex);
       preloadAdjacentImages();
@@ -2103,8 +2766,8 @@ async function openPreview(id, name, mime){
       const isMarkdown = name.toLowerCase().match(/\.(md|markdown)$/);
       
       if(isMarkdown){
-        $modalContent.className = "content";
-        $modalContent.innerHTML =
+        modalContent.className = "content";
+        modalContent.innerHTML =
           '<div class="textView" id="textViewContainer">'
           + '  <div class="textView-tools">'
           + '    <button class="btn-sm" id="btnPreviewMD" aria-label="Toggle preview">Preview</button>'
@@ -2148,8 +2811,8 @@ async function openPreview(id, name, mime){
       } else {
         const escaped = escapeHtml(text);
         const linked = linkify(escaped);
-        $modalContent.className = "content";
-        $modalContent.innerHTML =
+        modalContent.className = "content";
+        modalContent.innerHTML =
           '<div class="textView">'
           + '  <div class="textView-tools">'
           + '    <button class="btn-sm" id="btnCopyText" aria-label="Copy text">Copy</button>'
@@ -2168,137 +2831,192 @@ async function openPreview(id, name, mime){
       }
     }
 
-    $modal.style.display="flex";
   } catch(e){
+    console.error("Preview error:", e);
     toastErr("Preview gagal: "+(e.message||e));
-  } finally {
-    setLoading(false);
+    
+    const modalContent = document.getElementById("modalContent");
+    if(modalContent) {
+      modalContent.innerHTML = '<div style="padding:32px;text-align:center">Error: ' + escapeHtml(e.message || "Unknown error") + '</div>';
+    }
   }
 }
 
 function openWatch(id, name, mime){
-  $modalTitle.textContent = name;
+  if(currentAudioPlayer || currentVideoPlayer){
+    closeModal();
+    setTimeout(() => openWatch(id, name, mime), 100);
+    return;
+  }
+  
+  lockBody();
+  
   const src = new URL(location.href);
   src.pathname="/api/stream";
   src.search="";
   src.searchParams.set("id", id);
-
-  const scrollY = window.scrollY;
-  document.body.style.position = "fixed";
-  document.body.style.top = "-" + scrollY + "px";
-  document.body.style.width = "100%";
-  document.body.classList.add("modal-open");
-  
-  $modalTitle.textContent = name;
   
   const isAudio = mime && mime.startsWith("audio/");
 
-  $modalContent.className = "content";
-  
   if(isAudio){
-    $modalContent.innerHTML =
-      '<div style="background:var(--panel);padding:32px;display:flex;align-items:center;justify-content:center;min-height:300px">' +
-      '  <audio id="audioPlayer" controls style="width:100%;max-width:600px">' +
-      '    <source src="'+src.toString()+'" type="'+escapeHtml(mime)+'" />' +
-      '  </audio>' +
+    $modal.innerHTML = 
+      '<div class="audio-modal-wrapper">' +
+      '  <button class="audio-close-btn" id="audioCloseBtn" aria-label="Close">×</button>' +
+      '  <div class="audio-card">' +
+      '    <div class="audio-cover">' +
+      '      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">' +
+      '        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>' +
+      '      </svg>' +
+      '    </div>' +
+      '    <div class="audio-info">' +
+      '      <div class="audio-title" data-fullname="'+escapeHtml(name)+'">'+escapeHtml(name)+'</div>' +
+      '      <div class="audio-type">Audio File</div>' +
+      '    </div>' +
+      '    <div class="audio-player-wrapper">' +
+      '      <audio id="audioPlayer" preload="metadata">' +
+      '        <source src="'+src.toString()+'" type="'+escapeHtml(mime)+'" />' +
+      '      </audio>' +
+      '    </div>' +
+      '  </div>' +
       '</div>';
-  } else {
-    $modalContent.innerHTML =
-      '<div style="background:#000;padding:0">' +
-      '  <video id="plyrVideo" class="plyr" playsinline controls data-poster="">' +
-      '    <source src="'+src.toString()+'" type="video/mp4" />' +
-      '  </video>' +
-      '</div>';
-  }
-  
-  $modal.style.display = "flex";
-
-  if(isAudio){
-    setTimeout(initAudioPlayer, 100);
-  }
-  
-  if (!isAudio && window.Plyr) {
-    try {
-      const player = new Plyr("#plyrVideo", {
-        controls: [
-          'play-large',
-          'play',
-          'progress',
-          'current-time',
-          'duration',
-          'mute',
-          'volume',
-          'settings',
-          'pip',
-          'airplay',
-          'fullscreen'
-        ],
-        settings: ['captions', 'quality', 'speed', 'loop'],
-        quality: {
-          default: 720,
-          options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240]
-        },
-        speed: {
-          selected: 1,
-          options: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
-        },
-        ratio: '16:9',
-        clickToPlay: true,
-        hideControls: true,
-        resetOnEnd: false,
-        keyboard: {
-          focused: true,
-          global: true
-        },
-        tooltips: {
-          controls: true,
-          seek: true
-        },
-        seekTime: 10,
-        volume: 1,
-        muted: false,
-        invertTime: true,
-        toggleInvert: true,
-        displayDuration: true,
-        storage: {
-          enabled: true,
-          key: 'plyr-zdrive'
-        },
-        fullscreen: {
-          enabled: true,
-          fallback: true,
-          iosNative: true,
-          container: null
-        },
-        captions: {
-          active: false,
-          language: 'auto',
-          update: false
+    
+    $modal.style.display = "flex";
+    
+    setTimeout(() => {
+      const audioCloseBtn = document.getElementById('audioCloseBtn');
+      if(audioCloseBtn) {
+        audioCloseBtn.onclick = closeModal;
+      }
+      
+      $modal.onclick = (e)=>{
+        if(e.target === $modal || e.target.classList.contains('audio-modal-wrapper')){
+          closeModal();
         }
-      });
-      
-      player.on('ready', ()=>{
-        console.log('Plyr ready');
-      });
-      
-      player.on('enterfullscreen', ()=>{
-        document.documentElement.classList.add('plyr-fullscreen-active');
-      });
-      
-      player.on('exitfullscreen', ()=>{
-        document.documentElement.classList.remove('plyr-fullscreen-active');
-      });
-      
-      player.on('error', (e)=>{
-        console.error('Plyr error:', e);
-        toastErr('Gagal memutar video');
-      });
-      
-    } catch(e){
-      console.error("Plyr init error:", e);
-      toastErr("Video player gagal diinisialisasi");
+      };
+    }, 0);
+    
+  } else {
+    ensureModalStructure();
+    
+    const modalTitle = document.getElementById("modalTitle");
+    const modalContent = document.getElementById("modalContent");
+    
+    if(modalTitle) modalTitle.textContent = name;
+    if(modalContent) {
+      modalContent.className = "content";
+      modalContent.innerHTML = 
+        '<div style="background:#000;padding:0">' +
+        '  <video id="plyrVideo" class="plyr" playsinline controls data-poster="">' +
+        '    <source src="'+src.toString()+'" type="video/mp4" />' +
+        '  </video>' +
+        '</div>';
     }
-  }
+    
+    $modal.style.display = "flex";
+  }  setTimeout(()=>{
+    if(window.Plyr){
+      if(isAudio){
+        try {
+          currentAudioPlayer = new Plyr('#audioPlayer', {
+            controls: [
+              'play',
+              'progress',
+              'current-time',
+              'duration',
+              'mute',
+              'volume',
+              'settings'
+            ],
+            settings: ['speed', 'loop'],
+            speed: {
+              selected: 1,
+              options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+            },
+            keyboard: {
+              focused: true,
+              global: true
+            },
+            tooltips: {
+              controls: true,
+              seek: true
+            },
+            displayDuration: true,
+            invertTime: true,
+            toggleInvert: true,
+            autoplay: false
+          });
+          
+          currentAudioPlayer.on('ready', ()=> {
+            console.log('Plyr audio ready');
+            currentAudioPlayer.play().catch(error => {
+              console.log('Autoplay was prevented:', error);
+            });
+          });
+          
+          currentAudioPlayer.on('error', (e)=>{ 
+            console.error('Audio error:', e); 
+            toastErr('Gagal memutar audio'); 
+          });
+          
+        } catch(e){
+          console.error("Plyr audio init error:", e);
+          toastErr("Audio player gagal diinisialisasi");
+        }
+      } else {
+        try {
+          currentVideoPlayer = new Plyr("#plyrVideo", {
+            controls: [
+              'play-large',
+              'play',
+              'progress',
+              'current-time',
+              'duration',
+              'mute',
+              'volume',
+              'settings',
+              'pip',
+              'airplay',
+              'fullscreen'
+            ],
+            settings: ['captions', 'quality', 'speed', 'loop'],
+            quality: {
+              default: 720,
+              options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240]
+            },
+            speed: {
+              selected: 1,
+              options: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+            },
+            ratio: '16:9',
+            clickToPlay: true,
+            hideControls: true,
+            resetOnEnd: false,
+            keyboard: { focused: true, global: true },
+            tooltips: { controls: true, seek: true },
+            seekTime: 10,
+            volume: 1,
+            muted: false,
+            invertTime: true,
+            toggleInvert: true,
+            displayDuration: true,
+            storage: { enabled: true, key: 'plyr-zdrive' },
+            fullscreen: { enabled: true, fallback: true, iosNative: true, container: null },
+            captions: { active: false, language: 'auto', update: false },
+            autoplay: false
+          });
+          
+          currentVideoPlayer.on('ready', ()=> console.log('Plyr video ready'));
+          currentVideoPlayer.on('enterfullscreen', ()=> document.documentElement.classList.add('plyr-fullscreen-active'));
+          currentVideoPlayer.on('exitfullscreen', ()=> document.documentElement.classList.remove('plyr-fullscreen-active'));
+          currentVideoPlayer.on('error', (e)=>{ console.error('Plyr error:', e); toastErr('Gagal memutar video'); });
+          
+        } catch(e){
+          console.error("Plyr video init error:", e);
+          toastErr("Video player gagal diinisialisasi");
+        }
+      }
+    }
+  }, 150);
 }
 
 async function downloadFolderZip(folderId, folderName){
@@ -2357,9 +3075,6 @@ async function downloadFolderZip(folderId, folderName){
   }
 }
 
-/* ============================================================
-   ENHANCEMENT 4.4: Scroll to Top Button
-============================================================ */
 const scrollTopBtn = document.getElementById("scrollTop");
 
 window.addEventListener("scroll", ()=>{
@@ -2377,16 +3092,13 @@ scrollTopBtn.onclick = ()=>{
   });
 };
 
-/* ============================================================
-   ENHANCEMENT 4.3: Pull to Refresh (Mobile)
-============================================================ */
 let pullStartY = 0;
 let isPulling = false;
 const pullRefresh = document.getElementById("pullRefresh");
 const PULL_THRESHOLD = 80;
 
 document.addEventListener("touchstart", (e)=>{
-  if(window.scrollY === 0 && !$modal.style.display){
+  if(window.scrollY === 0 && $modal.style.display !== "flex"){
     pullStartY = e.touches[0].clientY;
     isPulling = true;
   }
@@ -2399,12 +3111,13 @@ document.addEventListener("touchmove", (e)=>{
   
   if(deltaY > 10 && window.scrollY === 0){
     if(deltaY > PULL_THRESHOLD){
+      e.preventDefault();
       pullRefresh.classList.add("visible");
     } else {
       pullRefresh.classList.remove("visible");
     }
   }
-}, {passive: true});
+}, {passive: false});
 
 document.addEventListener("touchend", (e)=>{
   if(!isPulling) return;
@@ -2412,7 +3125,6 @@ document.addEventListener("touchend", (e)=>{
   const deltaY = e.changedTouches[0].clientY - pullStartY;
   
   if(deltaY > PULL_THRESHOLD && window.scrollY === 0){
-    // Trigger refresh
     if(state.mode === "browse"){
       load(state.stack.at(-1).id);
       toastInfo("Memuat ulang...");
@@ -2431,9 +3143,6 @@ document.addEventListener("touchend", (e)=>{
   isPulling = false;
 }, {passive: true});
 
-/* ============================================================
-   Mobile Swipe Navigation
-============================================================ */
 let touchStartX = 0;
 let touchEndX = 0;
 
@@ -2459,9 +3168,6 @@ function handleSwipe(){
   }
 }
 
-/* ============================================================
-   Keyboard Shortcuts & Helpers
-============================================================ */
 document.addEventListener("keydown", (e)=>{
   if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
   
@@ -2508,40 +3214,6 @@ document.addEventListener("dblclick", (e)=>{
   }
 });
 
-function initAudioPlayer(){
-  const audioEl = document.getElementById("audioPlayer");
-  if(audioEl && window.Plyr){
-    try {
-      new Plyr(audioEl, {
-        controls: [
-          'play',
-          'progress',
-          'current-time',
-          'duration',
-          'mute',
-          'volume',
-          'settings'
-        ],
-        settings: ['speed', 'loop'],
-        speed: {
-          selected: 1,
-          options: [0.5, 0.75, 1, 1.25, 1.5, 2]
-        },
-        keyboard: {
-          focused: true,
-          global: true
-        },
-        tooltips: {
-          controls: true,
-          seek: true
-        }
-      });
-    } catch(e){
-      console.error("Audio Plyr error:", e);
-    }
-  }
-}
-
 let currentImageIndex = -1;
 let imageList = [];
 
@@ -2562,7 +3234,8 @@ function preloadAdjacentImages(){
 }
 
 document.addEventListener("keydown", (e)=>{
-  if($modalContent.classList.contains("image") && imageList.length > 1){
+  const modalContent = document.getElementById("modalContent");
+  if(modalContent && modalContent.classList.contains("image") && imageList.length > 1){
     if(e.key === "ArrowLeft" && currentImageIndex > 0){
       e.preventDefault();
       const prev = imageList[currentImageIndex - 1];
@@ -2577,39 +3250,48 @@ document.addEventListener("keydown", (e)=>{
   }
 });
 
-/* ============================================================
-   Initialize App
-============================================================ */
+// ✅ Replace the initialization section at the bottom
 (function initFromURL(){
   const params = new URLSearchParams(location.search);
   const f = params.get("folder");
-  if (f && f !== ROOT) state.stack = [{id: ROOT, name: "Root"}, {id: f, name: "Folder"}];
+  if (f && f !== ROOT && f.length > 0) {
+    if(/^[a-zA-Z0-9_-]{20,}$/.test(f)) {
+      state.stack = [{id: ROOT, name: "Root"}, {id: f, name: "Folder"}];
+    } else {
+      console.warn("Invalid folder ID in URL:", f);
+    }
+  }
+  
   const q = params.get("q");
   if (q) {
     state.q = q;
-    document.getElementById("q").value = q;
+    const searchInput = document.getElementById("q");
+    if(searchInput) {
+      searchInput.value = q;
+      updateSearchClearButton();
+    }
   }
+})();
+
+// ✅ Initialize modal close handler on page load
+(function initModalHandlers(){
+  const closeBtn = document.getElementById("modalClose");
+  if(closeBtn) {
+    closeBtn.onclick = closeModal;
+  }
+  
+  $modal.onclick = (e)=>{
+    if(e.target === $modal){
+      closeModal();
+    }
+  };
 })();
 
 renderPathControls();
 load(state.stack.at(-1).id);
 
-console.log("%cZDRIVE v2.2 ENHANCED", "color:#60a5fa;font-size:18px;font-weight:bold");
-console.log("%c✨ New Features:", "color:#34d399;font-weight:bold;font-size:14px");
-console.log("  • Skeleton Loading");
-console.log("  • Smooth Page Transitions");
-console.log("  • Image Gallery Thumbnails");
-console.log("  • View Mode Toggle (Grid/List)");
-console.log("  • Debounced Search (300ms)");
-console.log("  • Enhanced Toast Animations");
-console.log("  • Scroll to Top Button");
-console.log("  • Pull to Refresh (Mobile)");
-console.log("  • Breadcrumb Tooltips");
-console.log("%cKeyboard Shortcuts:", "color:#fbbf24;font-weight:bold;font-size:13px");
-console.log("  Ctrl+F     : Focus search");
-console.log("  Backspace  : Go back");
-console.log("  ESC        : Close modal");
-console.log("  ← →        : Navigate images");
+console.log("%cZDRIVE Enhanced", "color:#60a5fa;font-size:18px;font-weight:bold");
+console.log("Ngapain bang di console? Cari yang bermanfaat aja ya :)");
 
 <\/script>
 </body>
